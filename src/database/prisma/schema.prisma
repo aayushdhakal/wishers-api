@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  password   String?
+  firstName  String?
+  lastName   String?
+  avatar     String?
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  accounts   Account[]
+  events     Event[]
+  userTypeId String?
+  userType   UserType?  @relation(fields: [userTypeId], references: [id])
+
+  @@index([userTypeId], map: "users_userTypeId_fkey")
+  @@map("users")
+}
+
+model Account {
+  id                String       @id @default(cuid())
+  userId            String
+  provider          AuthProvider
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  sessionState      String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], map: "accounts_userId_fkey")
+  @@map("accounts")
+}
+
+model UserType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("user_types")
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
+enum EventType {
+  BIRTHDAY
+  ANNIVERSARY
+  WEDDING
+  GRADUATION
+}
+
+enum NotificationType {
+  CALL
+  EMAIL
+  SMS
+  PUSH_NOTIFICATION
+}
+
+model Event {
+  id              String           @id @default(cuid())
+  title           String
+  eventDate       DateTime
+  eventType       EventType
+  personName      String
+  description     String?
+  recurringEvent  Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders       EventReminder[]
+
+  @@index([userId], map: "events_userId_fkey")
+  @@index([eventDate], map: "events_eventDate_idx")
+  @@map("events")
+}
+
+model EventReminder {
+  id               String                      @id @default(cuid())
+  eventId          String
+  reminderDays     Int                         // Number of days before event to remind (e.g., 1, 3, 7, 14, 30)
+  isActive         Boolean                     @default(true)
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+  event            Event                       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  notificationTypes EventReminderNotification[]
+
+  @@index([eventId], map: "event_reminders_eventId_fkey")
+  @@map("event_reminders")
+}
+
+model EventReminderNotification {
+  id              String           @id @default(cuid())
+  reminderId      String
+  notificationType NotificationType
+  createdAt       DateTime         @default(now())
+  reminder        EventReminder    @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@index([reminderId], map: "event_reminder_notifications_reminderId_fkey")
+  @@map("event_reminder_notifications")
+}

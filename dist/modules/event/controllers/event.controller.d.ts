@@ -1,0 +1,32 @@
+import { EventService } from '../../../services/event/event.service';
+import { CreateEventDto, UpdateEventDto, EventResponseDto } from '../dto';
+import { User } from '@prisma/client';
+export declare class EventController {
+    private readonly eventService;
+    constructor(eventService: EventService);
+    createEvent(user: User, createEventDto: CreateEventDto): Promise<EventResponseDto>;
+    getUserEvents(user: User, page?: number, limit?: number, eventType?: string, startDate?: string, endDate?: string): Promise<{
+        events: EventResponseDto[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
+    getUpcomingEvents(user: User, limit?: number): Promise<EventResponseDto[]>;
+    getUserEventStats(user: User): Promise<{
+        totalEvents: number;
+        upcomingEvents: number;
+        eventsByType: Record<string, number>;
+    }>;
+    getEventsByDateRange(user: User, startDate: string, endDate: string): Promise<EventResponseDto[]>;
+    getEventsByType(user: User, eventType: string, page?: number, limit?: number): Promise<{
+        events: EventResponseDto[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
+    getEventById(user: User, eventId: string): Promise<EventResponseDto>;
+    updateEvent(user: User, eventId: string, updateEventDto: UpdateEventDto): Promise<EventResponseDto>;
+    deleteEvent(user: User, eventId: string): Promise<void>;
+}
