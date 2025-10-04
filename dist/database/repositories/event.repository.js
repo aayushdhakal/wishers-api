@@ -43,6 +43,45 @@ let EventRepository = class EventRepository {
             },
         });
     }
+    async findMyCardsDetails(userId) {
+        const now = new Date();
+        const allEvents = await this.prisma.event.findMany({
+            where: { userId },
+            include: {
+                reminders: {
+                    include: {
+                        notificationTypes: true,
+                    },
+                },
+            },
+        });
+        const totalEvents = allEvents.length;
+        const activeEvents = allEvents.filter(event => event.isActive).length;
+        const inactiveEvents = allEvents.filter(event => !event.isActive).length;
+        const upcomingEvents = allEvents.filter(event => event.eventDate > now && event.isActive).length;
+        const pastEvents = allEvents.filter(event => event.eventDate <= now).length;
+        const recurringEvents = allEvents.filter(event => event.recurringEvent && event.isActive).length;
+        const eventsByType = {};
+        allEvents.forEach(event => {
+            if (event.eventType) {
+                eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1;
+            }
+        });
+        const recentEvents = allEvents
+            .filter(event => event.isActive)
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            .slice(0, 10);
+        return {
+            totalEvents,
+            activeEvents,
+            inactiveEvents,
+            upcomingEvents,
+            pastEvents,
+            recurringEvents,
+            eventsByType,
+            recentEvents,
+        };
+    }
     async findById(id) {
         return this.prisma.event.findUnique({
             where: { id },
@@ -71,7 +110,6 @@ let EventRepository = class EventRepository {
         return this.prisma.event.findMany({
             where: {
                 userId,
-                isActive: true,
                 ...options?.where,
             },
             include: {
@@ -108,11 +146,11 @@ let EventRepository = class EventRepository {
             take: limit,
         });
     }
-    async findByDateRange(userId, startDate, endDate) {
+    async findByDateRange(userId, startDate, endDate, options) {
         return this.prisma.event.findMany({
             where: {
                 userId,
-                isActive: true,
+                ...options?.where,
                 eventDate: {
                     gte: startDate,
                     lte: endDate,
@@ -131,11 +169,12 @@ let EventRepository = class EventRepository {
         });
     }
     async findByEventType(userId, eventType, options) {
+        const normalizedEventType = eventType.toUpperCase();
         return this.prisma.event.findMany({
             where: {
                 userId,
-                isActive: true,
-                eventType: eventType,
+                eventType: normalizedEventType,
+                ...options?.where,
             },
             include: {
                 reminders: {
@@ -184,6 +223,19 @@ let EventRepository = class EventRepository {
             },
         });
     }
+    async updateEventStatus(id, data) {
+        return this.prisma.event.update({
+            where: { id },
+            data: { isActive: data.isActive },
+            include: {
+                reminders: {
+                    include: {
+                        notificationTypes: true,
+                    },
+                },
+            },
+        });
+    }
     async deleteEvent(id, userId) {
         return this.prisma.event.update({
             where: { id },
@@ -213,7 +265,15 @@ let EventRepository = class EventRepository {
         return this.prisma.event.count({
             where: {
                 userId,
-                isActive: true,
+            },
+        });
+    }
+    async countUserEventsByType(userId, eventType) {
+        const normalizedEventType = eventType.toUpperCase();
+        return this.prisma.event.count({
+            where: {
+                userId,
+                eventType: normalizedEventType,
             },
         });
     }

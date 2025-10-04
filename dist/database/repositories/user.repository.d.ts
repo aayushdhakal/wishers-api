@@ -10,6 +10,12 @@ export declare class UserRepository {
     findByEmail(email: string): Promise<User | null>;
     findById(id: string): Promise<User | null>;
     findByProvider(provider: AuthProvider, providerAccountId: string): Promise<User | null>;
+    isAdmin(user: User & {
+        userType?: {
+            name: string;
+        } | null;
+    }): boolean;
+    setUserAsAdmin(userId: string): Promise<User>;
     updateUser(id: string, data: UpdateUserData): Promise<User>;
     updatePassword(id: string, newPassword: string): Promise<User>;
     verifyPassword(user: User, password: string): Promise<boolean>;

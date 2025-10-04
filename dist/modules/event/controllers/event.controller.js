@@ -25,25 +25,44 @@ let EventController = class EventController {
     async createEvent(user, createEventDto) {
         return this.eventService.createEvent(user.id, createEventDto);
     }
-    async getUserEvents(user, page, limit, eventType, startDate, endDate) {
+    async getUserEvents(user, page, limit, eventType, startDate, endDate, isActive) {
+        if (limit < 1 || limit > 100) {
+            throw new common_1.BadRequestException('Limit must be between 1 and 100');
+        }
+        if (page < 1) {
+            throw new common_1.BadRequestException('Page must be a positive number');
+        }
         return this.eventService.getUserEvents(user.id, {
             page,
             limit,
             eventType,
             startDate,
             endDate,
+            isActive,
         });
     }
     async getUpcomingEvents(user, limit) {
+        if (limit < 1 || limit > 100) {
+            throw new common_1.BadRequestException('Limit must be between 1 and 100');
+        }
         return this.eventService.getUpcomingEvents(user.id, limit);
     }
     async getUserEventStats(user) {
-        return this.eventService.getUserEventStats(user.id);
+        return this.eventService.getUserEventStatistics(user.id);
+    }
+    async getMyCardsDetails(user) {
+        return this.eventService.getUserEventStatistics(user.id);
     }
     async getEventsByDateRange(user, startDate, endDate) {
         return this.eventService.getEventsByDateRange(user.id, startDate, endDate);
     }
     async getEventsByType(user, eventType, page, limit) {
+        if (limit < 1 || limit > 100) {
+            throw new common_1.BadRequestException('Limit must be between 1 and 100');
+        }
+        if (page < 1) {
+            throw new common_1.BadRequestException('Page must be a positive number');
+        }
         return this.eventService.getEventsByType(user.id, eventType, { page, limit });
     }
     async getEventById(user, eventId) {
@@ -51,6 +70,9 @@ let EventController = class EventController {
     }
     async updateEvent(user, eventId, updateEventDto) {
         return this.eventService.updateEvent(user.id, eventId, updateEventDto);
+    }
+    async updateEventStatus(user, eventId, updateEventDto) {
+        return this.eventService.updateEventStatus(user.id, eventId, updateEventDto);
     }
     async deleteEvent(user, eventId) {
         return this.eventService.deleteEvent(user.id, eventId);
@@ -70,19 +92,20 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, decorators_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('page', new common_1.ParseIntPipe({ optional: true }))),
-    __param(2, (0, common_1.Query)('limit', new common_1.ParseIntPipe({ optional: true }))),
+    __param(1, (0, common_1.Query)('page', new common_1.DefaultValuePipe(1), common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Query)('limit', new common_1.DefaultValuePipe(10), common_1.ParseIntPipe)),
     __param(3, (0, common_1.Query)('eventType')),
     __param(4, (0, common_1.Query)('startDate')),
     __param(5, (0, common_1.Query)('endDate')),
+    __param(6, (0, common_1.Query)('isActive')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Number, Number, String, String, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String, Boolean]),
     __metadata("design:returntype", Promise)
 ], EventController.prototype, "getUserEvents", null);
 __decorate([
     (0, common_1.Get)('upcoming'),
     __param(0, (0, decorators_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('limit', new common_1.ParseIntPipe({ optional: true }))),
+    __param(1, (0, common_1.Query)('limit', new common_1.DefaultValuePipe(10), common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
@@ -94,6 +117,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], EventController.prototype, "getUserEventStats", null);
+__decorate([
+    (0, common_1.Get)('my-cards'),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EventController.prototype, "getMyCardsDetails", null);
 __decorate([
     (0, common_1.Get)('date-range'),
     __param(0, (0, decorators_1.CurrentUser)()),
@@ -107,8 +137,8 @@ __decorate([
     (0, common_1.Get)('type/:eventType'),
     __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('eventType')),
-    __param(2, (0, common_1.Query)('page', new common_1.ParseIntPipe({ optional: true }))),
-    __param(3, (0, common_1.Query)('limit', new common_1.ParseIntPipe({ optional: true }))),
+    __param(2, (0, common_1.Query)('page', new common_1.DefaultValuePipe(1), common_1.ParseIntPipe)),
+    __param(3, (0, common_1.Query)('limit', new common_1.DefaultValuePipe(10), common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String, Number, Number]),
     __metadata("design:returntype", Promise)
@@ -131,6 +161,17 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, dto_1.UpdateEventDto]),
     __metadata("design:returntype", Promise)
 ], EventController.prototype, "updateEvent", null);
+__decorate([
+    (0, common_1.Put)(':id/status'),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe({ whitelist: true, transform: true })),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, dto_1.UpdateEventStatusDto]),
+    __metadata("design:returntype", Promise)
+], EventController.prototype, "updateEventStatus", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),

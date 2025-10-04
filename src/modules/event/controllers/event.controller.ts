@@ -13,9 +13,11 @@ import {
   ValidationPipe,
   UsePipes,
   ParseIntPipe,
+  DefaultValuePipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { EventService } from '../../../services/event/event.service';
-import { CreateEventDto, UpdateEventDto, EventResponseDto } from '../dto';
+import { CreateEventDto, UpdateEventDto, EventResponseDto, UpdateEventStatusDto } from '../dto';
 import { JwtAuthGuard } from '../../auth/guards';
 import { CurrentUser } from '../../auth/decorators';
 import { User } from '@prisma/client';
@@ -38,17 +40,34 @@ export class EventController {
     return this.eventService.createEvent(user.id, createEventDto);
   }
 
+  // @Get('myCards')
+  // async getMyCards(
+  //   @CurrentUser() user: User,
+  // ): Promise<{
+  //   totalEvents: number;
+  //   activeEvents: number;
+  //   inactiveEvents: number;
+  //   upcomingEvents: number;
+  //   pastEvents: number;
+  //   recurringEvents: number;
+  //   eventsByType: Record<string, number>;
+  //   recentEvents: EventResponseDto[];
+  // }> {
+  //   return this.eventService.getUserEventStatistics(user.id);
+  // }
+
   /**
    * Get all events for the current user
    */
   @Get()
   async getUserEvents(
     @CurrentUser() user: User,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
     @Query('eventType') eventType?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('isActive') isActive?: boolean,
   ): Promise<{
     events: EventResponseDto[];
     total: number;
@@ -56,12 +75,22 @@ export class EventController {
     limit: number;
     totalPages: number;
   }> {
+    // Validate limit bounds
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit must be between 1 and 100');
+    }
+    
+    if (page < 1) {
+      throw new BadRequestException('Page must be a positive number');
+    }
+
     return this.eventService.getUserEvents(user.id, {
       page,
       limit,
       eventType,
       startDate,
       endDate,
+      isActive,
     });
   }
 
@@ -71,23 +100,52 @@ export class EventController {
   @Get('upcoming')
   async getUpcomingEvents(
     @CurrentUser() user: User,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ): Promise<EventResponseDto[]> {
+    // Validate limit bounds
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit must be between 1 and 100');
+    }
+    
     return this.eventService.getUpcomingEvents(user.id, limit);
   }
 
   /**
-   * Get user event statistics
+   * Get comprehensive user event statistics
    */
   @Get('stats')
   async getUserEventStats(
     @CurrentUser() user: User,
   ): Promise<{
     totalEvents: number;
+    activeEvents: number;
+    inactiveEvents: number;
     upcomingEvents: number;
+    pastEvents: number;
+    recurringEvents: number;
     eventsByType: Record<string, number>;
+    recentEvents: EventResponseDto[];
   }> {
-    return this.eventService.getUserEventStats(user.id);
+    return this.eventService.getUserEventStatistics(user.id);
+  }
+
+  /**
+   * Get my cards details - comprehensive dashboard statistics
+   */
+  @Get('my-cards')
+  async getMyCardsDetails(
+    @CurrentUser() user: User,
+  ): Promise<{
+    totalEvents: number;
+    activeEvents: number;
+    inactiveEvents: number;
+    upcomingEvents: number;
+    pastEvents: number;
+    recurringEvents: number;
+    eventsByType: Record<string, number>;
+    recentEvents: EventResponseDto[];
+  }> {
+    return this.eventService.getUserEventStatistics(user.id);
   }
 
   /**
@@ -109,8 +167,8 @@ export class EventController {
   async getEventsByType(
     @CurrentUser() user: User,
     @Param('eventType') eventType: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ): Promise<{
     events: EventResponseDto[];
     total: number;
@@ -118,6 +176,15 @@ export class EventController {
     limit: number;
     totalPages: number;
   }> {
+    // Validate bounds
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit must be between 1 and 100');
+    }
+    
+    if (page < 1) {
+      throw new BadRequestException('Page must be a positive number');
+    }
+    
     return this.eventService.getEventsByType(user.id, eventType, { page, limit });
   }
 
@@ -144,6 +211,20 @@ export class EventController {
   ): Promise<EventResponseDto> {
     return this.eventService.updateEvent(user.id, eventId, updateEventDto);
   }
+
+    /**
+   * update event status an event (set isActive to false)
+   */
+    @Put(':id/status')
+    @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+    @HttpCode(HttpStatus.OK)
+    async updateEventStatus(
+      @CurrentUser() user: User,
+      @Param('id') eventId: string,
+      @Body() updateEventDto: UpdateEventStatusDto,
+    ): Promise<EventResponseDto> {
+      return this.eventService.updateEventStatus(user.id, eventId, updateEventDto);
+    }
 
   /**
    * Delete an event

@@ -11,6 +11,7 @@ export declare class UserResponseDto {
     lastName: string | null;
     avatar: string | null;
     isActive: boolean;
+    isAdmin?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

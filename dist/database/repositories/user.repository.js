@@ -64,6 +64,7 @@ let UserRepository = class UserRepository {
             where: { email },
             include: {
                 accounts: true,
+                userType: true,
             },
         });
     }
@@ -92,6 +93,28 @@ let UserRepository = class UserRepository {
             },
         });
         return account?.user || null;
+    }
+    isAdmin(user) {
+        return user.userType?.name?.toLowerCase() === 'admin';
+    }
+    async setUserAsAdmin(userId) {
+        const adminUserType = await this.prisma.userType.upsert({
+            where: { name: 'admin' },
+            update: {},
+            create: {
+                name: 'admin',
+                description: 'Administrator user type',
+                isActive: true,
+            },
+        });
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { userTypeId: adminUserType.id },
+            include: {
+                accounts: true,
+                userType: true,
+            },
+        });
     }
     async updateUser(id, data) {
         return this.prisma.user.update({

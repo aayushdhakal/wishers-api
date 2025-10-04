@@ -9,8 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterDto = void 0;
+exports.RegisterDto = exports.PasswordMatchConstraint = void 0;
 const class_validator_1 = require("class-validator");
+let PasswordMatchConstraint = class PasswordMatchConstraint {
+    validate(confirmPassword, args) {
+        const [relatedPropertyName] = args.constraints;
+        const relatedValue = args.object[relatedPropertyName];
+        return confirmPassword === relatedValue;
+    }
+    defaultMessage(args) {
+        return 'Passwords do not match';
+    }
+};
+exports.PasswordMatchConstraint = PasswordMatchConstraint;
+exports.PasswordMatchConstraint = PasswordMatchConstraint = __decorate([
+    (0, class_validator_1.ValidatorConstraint)({ name: 'PasswordMatch', async: false })
+], PasswordMatchConstraint);
 class RegisterDto {
 }
 exports.RegisterDto = RegisterDto;
@@ -20,10 +34,17 @@ __decorate([
 ], RegisterDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsString)({ message: 'Password must be a string' }),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Password is required' }),
     (0, class_validator_1.MinLength)(8, { message: 'Password must be at least 8 characters long' }),
     (0, class_validator_1.MaxLength)(50, { message: 'Password must not exceed 50 characters' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
+__decorate([
+    (0, class_validator_1.IsString)({ message: 'Confirm password must be a string' }),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Confirm password is required' }),
+    (0, class_validator_1.Validate)(PasswordMatchConstraint, ['password'], { message: 'Passwords do not match' }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "confirmPassword", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)({ message: 'First name must be a string' }),

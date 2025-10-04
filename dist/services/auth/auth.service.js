@@ -120,8 +120,15 @@ let AuthService = class AuthService {
         };
     }
     excludePassword(user) {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        const { password, userType, userTypeId, ...userWithoutPassword } = user;
+        const isAdmin = this.userRepository.isAdmin(user);
+        const result = {
+            ...userWithoutPassword,
+        };
+        if (isAdmin) {
+            result.isAdmin = true;
+        }
+        return result;
     }
     async verifyToken(token) {
         try {
@@ -150,6 +157,10 @@ let AuthService = class AuthService {
             ...tokens,
             user: this.excludePassword(user),
         };
+    }
+    async promoteToAdmin(userId) {
+        const user = await this.userRepository.setUserAsAdmin(userId);
+        return this.excludePassword(user);
     }
 };
 exports.AuthService = AuthService;

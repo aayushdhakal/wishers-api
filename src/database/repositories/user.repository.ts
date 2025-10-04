@@ -70,6 +70,7 @@ export class UserRepository {
       where: { email },
       include: {
         accounts: true,
+        userType: true,
       },
     });
   }
@@ -110,6 +111,39 @@ export class UserRepository {
     });
 
     return account?.user || null;
+  }
+
+  /**
+   * Check if user is admin
+   */
+  isAdmin(user: User & { userType?: { name: string } | null }): boolean {
+    return user.userType?.name?.toLowerCase() === 'admin';
+  }
+
+  /**
+   * Set user as admin
+   */
+  async setUserAsAdmin(userId: string): Promise<User> {
+    // First, ensure admin user type exists
+    const adminUserType = await this.prisma.userType.upsert({
+      where: { name: 'admin' },
+      update: {},
+      create: {
+        name: 'admin',
+        description: 'Administrator user type',
+        isActive: true,
+      },
+    });
+
+    // Update user to admin type
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { userTypeId: adminUserType.id },
+      include: {
+        accounts: true,
+        userType: true,
+      },
+    });
   }
 
   /**

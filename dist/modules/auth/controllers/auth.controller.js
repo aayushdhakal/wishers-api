@@ -46,16 +46,7 @@ let AuthController = class AuthController {
         await this.authService.logout(user.id);
     }
     async getCurrentUser(user) {
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatar: user.avatar,
-            isActive: user.isActive,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-        };
+        return this.authService.getProfile(user.id);
     }
     async deactivateAccount(user) {
         await this.authService.deactivateAccount(user.id);

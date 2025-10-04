@@ -50,6 +50,9 @@ async function bootstrap() {
         app.use((0, helmet_1.default)({
             contentSecurityPolicy: nodeEnv === 'production' ? undefined : false,
             crossOriginEmbedderPolicy: nodeEnv === 'production',
+            referrerPolicy: nodeEnv === 'production' ?
+                { policy: 'strict-origin-when-cross-origin' } :
+                false,
             hsts: nodeEnv === 'production' ? {
                 maxAge: 31536000,
                 includeSubDomains: true,
@@ -65,6 +68,8 @@ async function bootstrap() {
                 'https://localhost:3000',
                 'https://localhost:3001',
                 'https://localhost:3443',
+                'http://localhost:5173',
+                'http://192.168.10.68:*'
             ],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             allowedHeaders: [
@@ -75,6 +80,9 @@ async function bootstrap() {
                 'Authorization',
                 'X-Access-Token',
                 'X-Refresh-Token',
+                'Referer',
+                'User-Agent',
+                'X-Request-Time',
             ],
             exposedHeaders: [
                 'Authorization',

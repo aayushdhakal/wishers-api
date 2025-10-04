@@ -33,6 +33,10 @@ let EventService = class EventService {
         });
         return this.mapEventToResponseDto(event);
     }
+    async getMyCards(userId) {
+        const events = await this.eventRepository.findByUserId(userId);
+        return events.map((event) => this.mapEventToResponseDto(event));
+    }
     async getUserEvents(userId, options) {
         const page = options?.page || 1;
         const limit = options?.limit || 10;
@@ -40,21 +44,31 @@ let EventService = class EventService {
         let events;
         let total;
         if (options?.startDate && options?.endDate) {
-            events = await this.eventRepository.findByDateRange(userId, new Date(options.startDate), new Date(options.endDate));
+            events = await this.eventRepository.findByDateRange(userId, new Date(options.startDate), new Date(options.endDate), {
+                where: {
+                    isActive: options.isActive,
+                },
+            });
             total = events.length;
         }
         else if (options?.eventType) {
             events = await this.eventRepository.findByEventType(userId, options.eventType, {
                 skip,
                 take: limit,
+                where: {
+                    isActive: options.isActive,
+                },
             });
-            total = await this.eventRepository.countUserEvents(userId);
+            total = await this.eventRepository.countUserEventsByType(userId, options.eventType);
         }
         else {
             events = await this.eventRepository.findByUserId(userId, {
                 skip,
                 take: limit,
                 orderBy: { eventDate: 'asc' },
+                where: {
+                    isActive: options.isActive,
+                },
             });
             total = await this.eventRepository.countUserEvents(userId);
         }
@@ -101,6 +115,14 @@ let EventService = class EventService {
         const updatedEvent = await this.eventRepository.updateEvent(eventId, userId, updateData);
         return this.mapEventToResponseDto(updatedEvent);
     }
+    async updateEventStatus(userId, eventId, updateEventDto) {
+        const existingEvent = await this.eventRepository.findByIdAndUserId(eventId, userId);
+        if (!existingEvent) {
+            throw new common_1.NotFoundException('Event not found');
+        }
+        const updatedEvent = await this.eventRepository.updateEventStatus(eventId, updateEventDto);
+        return this.mapEventToResponseDto(updatedEvent);
+    }
     async deleteEvent(userId, eventId) {
         const event = await this.eventRepository.findByIdAndUserId(eventId, userId);
         if (!event) {
@@ -108,13 +130,17 @@ let EventService = class EventService {
         }
         await this.eventRepository.deleteEvent(eventId, userId);
     }
-    async getEventsByDateRange(userId, startDate, endDate) {
+    async getEventsByDateRange(userId, startDate, endDate, options) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         if (start >= end) {
             throw new common_1.BadRequestException('Start date must be before end date');
         }
-        const events = await this.eventRepository.findByDateRange(userId, start, end);
+        const events = await this.eventRepository.findByDateRange(userId, start, end, {
+            where: {
+                isActive: options.where?.isActive,
+            }
+        });
         return events.map((event) => this.mapEventToResponseDto(event));
     }
     async getEventsByType(userId, eventType, options) {
@@ -169,6 +195,13 @@ let EventService = class EventService {
                 createdAt: reminder.createdAt,
                 updatedAt: reminder.updatedAt,
             })),
+        };
+    }
+    async getUserEventStatistics(userId) {
+        const stats = await this.eventRepository.findMyCardsDetails(userId);
+        return {
+            ...stats,
+            recentEvents: stats.recentEvents.map(event => this.mapEventToResponseDto(event)),
         };
     }
 };

@@ -5,7 +5,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EventRepository, EventWithReminders } from '../../database/repositories/event.repository';
-import { CreateEventDto, UpdateEventDto, EventResponseDto } from '../../modules/event/dto';
+import { CreateEventDto, UpdateEventDto, EventResponseDto, UpdateEventStatusDto } from '../../modules/event/dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EventService {
@@ -39,6 +40,14 @@ export class EventService {
   }
 
   /**
+   * Get my cards details
+   */
+  async getMyCards(userId: string): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.findByUserId(userId);
+    return events.map((event) => this.mapEventToResponseDto(event));
+  }
+
+  /**
    * Get all events for a user
    */
   async getUserEvents(
@@ -49,6 +58,7 @@ export class EventService {
       eventType?: string;
       startDate?: string;
       endDate?: string;
+      isActive?: boolean;
     }
   ): Promise<{
     events: EventResponseDto[];
@@ -69,20 +79,31 @@ export class EventService {
       events = await this.eventRepository.findByDateRange(
         userId,
         new Date(options.startDate),
-        new Date(options.endDate)
+        new Date(options.endDate),
+        {
+          where: {
+            isActive: options.isActive,
+          },
+        }
       );
       total = events.length;
     } else if (options?.eventType) {
       events = await this.eventRepository.findByEventType(userId, options.eventType, {
         skip,
         take: limit,
+        where: {
+          isActive: options.isActive,
+        },
       });
-      total = await this.eventRepository.countUserEvents(userId); // This could be optimized
+      total = await this.eventRepository.countUserEventsByType(userId, options.eventType);
     } else {
       events = await this.eventRepository.findByUserId(userId, {
         skip,
         take: limit,
         orderBy: { eventDate: 'asc' },
+        where: {
+          isActive: options.isActive,
+        },
       });
       total = await this.eventRepository.countUserEvents(userId);
     }
@@ -156,6 +177,18 @@ export class EventService {
   }
 
   /**
+   * Update an event status
+   */
+  async updateEventStatus(userId: string, eventId: string, updateEventDto: UpdateEventStatusDto): Promise<EventResponseDto> {
+    const existingEvent = await this.eventRepository.findByIdAndUserId(eventId, userId);
+    if (!existingEvent) {
+      throw new NotFoundException('Event not found');
+    }
+    const updatedEvent = await this.eventRepository.updateEventStatus(eventId, updateEventDto);
+    return this.mapEventToResponseDto(updatedEvent);
+  }
+
+  /**
    * Delete an event (soft delete)
    */
   async deleteEvent(userId: string, eventId: string): Promise<void> {
@@ -173,7 +206,10 @@ export class EventService {
   async getEventsByDateRange(
     userId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    options?: {
+      where?: Prisma.EventWhereInput;
+    }
   ): Promise<EventResponseDto[]> {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -182,7 +218,11 @@ export class EventService {
       throw new BadRequestException('Start date must be before end date');
     }
 
-    const events = await this.eventRepository.findByDateRange(userId, start, end);
+    const events = await this.eventRepository.findByDateRange(userId, start, end, {
+      where: {
+        isActive: options.where?.isActive,
+      }
+    });
     return events.map((event) => this.mapEventToResponseDto(event));
   }
 
@@ -268,6 +308,27 @@ export class EventService {
         createdAt: reminder.createdAt,
         updatedAt: reminder.updatedAt,
       })),
+    };
+  }
+
+  /**
+   * Get comprehensive user event statistics
+   */
+  async getUserEventStatistics(userId: string): Promise<{
+    totalEvents: number;
+    activeEvents: number;
+    inactiveEvents: number;
+    upcomingEvents: number;
+    pastEvents: number;
+    recurringEvents: number;
+    eventsByType: Record<string, number>;
+    recentEvents: EventResponseDto[];
+  }> {
+    const stats = await this.eventRepository.findMyCardsDetails(userId);
+    
+    return {
+      ...stats,
+      recentEvents: stats.recentEvents.map(event => this.mapEventToResponseDto(event)),
     };
   }
 }

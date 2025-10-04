@@ -221,11 +221,22 @@ export class AuthService {
   }
 
   /**
-   * Remove password from user object
+   * Remove password from user object and conditionally add isAdmin field
    */
-  private excludePassword(user: User): UserResponseDto {
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+  private excludePassword(user: User & { userType?: { name: string } | null }): UserResponseDto {
+    const { password, userType, userTypeId, ...userWithoutPassword } = user;
+    const isAdmin = this.userRepository.isAdmin(user);
+    
+    const result: UserResponseDto = {
+      ...userWithoutPassword,
+    };
+    
+    // Only include isAdmin field if user is actually an admin
+    if (isAdmin) {
+      result.isAdmin = true;
+    }
+    
+    return result;
   }
 
   /**
@@ -271,5 +282,13 @@ export class AuthService {
       ...tokens,
       user: this.excludePassword(user),
     };
+  }
+
+  /**
+   * Promote user to admin
+   */
+  async promoteToAdmin(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.setUserAsAdmin(userId);
+    return this.excludePassword(user);
   }
 }

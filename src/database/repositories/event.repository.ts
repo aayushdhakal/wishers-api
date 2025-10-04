@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Event, EventReminder, EventReminderNotification, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { CreateEventDto, UpdateEventDto } from '../../modules/event/dto';
+import { CreateEventDto, UpdateEventDto, UpdateEventStatusDto } from '../../modules/event/dto';
 
 export type EventReminderWithNotifications = EventReminder & {
   notificationTypes: EventReminderNotification[];
@@ -65,6 +65,67 @@ export class EventRepository {
   }
 
   /**
+   * Find my cards details - comprehensive user event statistics
+   */
+  async findMyCardsDetails(userId: string): Promise<{
+    totalEvents: number;
+    activeEvents: number;
+    inactiveEvents: number;
+    upcomingEvents: number;
+    pastEvents: number;
+    recurringEvents: number;
+    eventsByType: Record<string, number>;
+    recentEvents: EventWithReminders[];
+  }> {
+    const now = new Date();
+    
+    // Get all user events
+    const allEvents = await this.prisma.event.findMany({
+      where: { userId },
+      include: {
+        reminders: {
+          include: {
+            notificationTypes: true,
+          },
+        },
+      },
+    }) as EventWithReminders[];
+
+    // Calculate statistics
+    const totalEvents = allEvents.length;
+    const activeEvents = allEvents.filter(event => event.isActive).length;
+    const inactiveEvents = allEvents.filter(event => !event.isActive).length;
+    const upcomingEvents = allEvents.filter(event => event.eventDate > now && event.isActive).length;
+    const pastEvents = allEvents.filter(event => event.eventDate <= now).length;
+    const recurringEvents = allEvents.filter(event => event.recurringEvent && event.isActive).length;
+
+    // Group events by type
+    const eventsByType: Record<string, number> = {};
+    allEvents.forEach(event => {
+      if (event.eventType) {
+        eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1;
+      }
+    });
+
+    // Get recent events (last 10 active events)
+    const recentEvents = allEvents
+      .filter(event => event.isActive)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 10);
+
+    return {
+      totalEvents,
+      activeEvents,
+      inactiveEvents,
+      upcomingEvents,
+      pastEvents,
+      recurringEvents,
+      eventsByType,
+      recentEvents,
+    };
+  }
+
+  /**
    * Find event by ID
    */
   async findById(id: string): Promise<EventWithReminders | null> {
@@ -111,7 +172,6 @@ export class EventRepository {
     return this.prisma.event.findMany({
       where: {
         userId,
-        isActive: true,
         ...options?.where,
       },
       include: {
@@ -159,12 +219,15 @@ export class EventRepository {
   async findByDateRange(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    options?: {
+      where?: Prisma.EventWhereInput;
+    }
   ): Promise<EventWithReminders[]> {
     return this.prisma.event.findMany({
       where: {
         userId,
-        isActive: true,
+        ...options?.where,
         eventDate: {
           gte: startDate,
           lte: endDate,
@@ -192,13 +255,17 @@ export class EventRepository {
     options?: {
       skip?: number;
       take?: number;
+      where?: Prisma.EventWhereInput;
     }
   ): Promise<EventWithReminders[]> {
+    // Convert to uppercase to match the enum
+    const normalizedEventType = eventType.toUpperCase();
+    
     return this.prisma.event.findMany({
       where: {
         userId,
-        isActive: true,
-        eventType: eventType as any,
+        eventType: normalizedEventType as any,
+        ...options?.where,
       },
       include: {
         reminders: {
@@ -212,7 +279,7 @@ export class EventRepository {
       },
       skip: options?.skip,
       take: options?.take,
-    });
+    }) as Promise<EventWithReminders[]>;
   }
 
   /**
@@ -245,6 +312,22 @@ export class EventRepository {
             }
           : undefined,
       },
+      include: {
+        reminders: {
+          include: {
+            notificationTypes: true,
+          },
+        },
+      },
+    }) as Promise<EventWithReminders>;
+  }
+  /**
+   * Update event status
+   */
+  async updateEventStatus(id: string, data: UpdateEventStatusDto): Promise<EventWithReminders> {
+    return this.prisma.event.update({
+      where: { id },
+      data: { isActive: data.isActive },
       include: {
         reminders: {
           include: {
@@ -295,7 +378,20 @@ export class EventRepository {
     return this.prisma.event.count({
       where: {
         userId,
-        isActive: true,
+      },
+    });
+  }
+
+  /**
+   * Count user events by type
+   */
+  async countUserEventsByType(userId: string, eventType: string): Promise<number> {
+    const normalizedEventType = eventType.toUpperCase();
+    
+    return this.prisma.event.count({
+      where: {
+        userId,
+        eventType: normalizedEventType as any,
       },
     });
   }

@@ -35,4 +35,5 @@ export declare class AuthService {
         lastName: string;
         avatar?: string;
     }): Promise<AuthResponseDto>;
+    promoteToAdmin(userId: string): Promise<UserResponseDto>;
 }
