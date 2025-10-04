@@ -9,6 +9,7 @@ export declare class UserResponseDto {
     email: string;
     firstName: string | null;
     lastName: string | null;
+    phone: string | null;
     avatar: string | null;
     isActive: boolean;
     isAdmin?: boolean;

@@ -4,12 +4,14 @@ export interface CreateUserData {
     password?: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
 }
 export interface CreateOAuthUserData {
     email: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
     provider: AuthProvider;
     providerAccountId: string;
@@ -24,6 +26,7 @@ export interface UpdateUserData {
     email?: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
     isActive?: boolean;
 }

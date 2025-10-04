@@ -5,6 +5,7 @@ export interface CreateUserData {
     password?: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
   }
   
@@ -12,6 +13,7 @@ export interface CreateUserData {
     email: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
     provider: AuthProvider;
     providerAccountId: string;
@@ -27,6 +29,7 @@ export interface CreateUserData {
     email?: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
     isActive?: boolean;
   }

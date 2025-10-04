@@ -59,6 +59,12 @@ __decorate([
 ], RegisterDto.prototype, "lastName", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)({ message: 'Phone number must be a string' }),
+    (0, class_validator_1.MaxLength)(20, { message: 'Phone number must not exceed 20 characters' }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "phone", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)({ message: 'Avatar must be a string' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "avatar", void 0);

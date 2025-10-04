@@ -27,6 +27,7 @@ let UserRepository = class UserRepository {
                 password: hashedPassword,
                 firstName: data.firstName,
                 lastName: data.lastName,
+                phone: data.phone,
                 avatar: data.avatar,
             },
             include: {

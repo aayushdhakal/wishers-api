@@ -22,7 +22,7 @@ export class AuthService {
    * Register a new user
    */
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { email, password, firstName, lastName, avatar } = registerDto;
+    const { email, password, firstName, lastName, phone, avatar } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(email);
@@ -36,6 +36,7 @@ export class AuthService {
       password,
       firstName,
       lastName,
+      phone,
       avatar,
     });
 
@@ -228,7 +229,15 @@ export class AuthService {
     const isAdmin = this.userRepository.isAdmin(user);
     
     const result: UserResponseDto = {
-      ...userWithoutPassword,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: (user as any).phone, // Type assertion until Prisma types refresh
+      avatar: user.avatar,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
     
     // Only include isAdmin field if user is actually an admin

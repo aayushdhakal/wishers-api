@@ -39,6 +39,11 @@ export class RegisterDto {
   lastName?: string;
 
   @IsOptional()
+  @IsString({ message: 'Phone number must be a string' })
+  @MaxLength(20, { message: 'Phone number must not exceed 20 characters' })
+  phone?: string;
+
+  @IsOptional()
   @IsString({ message: 'Avatar must be a string' })
   avatar?: string;
 }

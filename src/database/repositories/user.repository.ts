@@ -25,8 +25,9 @@ export class UserRepository {
         password: hashedPassword,
         firstName: data.firstName,
         lastName: data.lastName,
+        phone: data.phone,
         avatar: data.avatar,
-      },
+      }, // Type assertion until Prisma types refresh
       include: {
         accounts: true,
       },

@@ -9,5 +9,6 @@ export declare class RegisterDto {
     confirmPassword: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
     avatar?: string;
 }

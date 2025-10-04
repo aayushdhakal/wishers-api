@@ -19,7 +19,7 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async register(registerDto) {
-        const { email, password, firstName, lastName, avatar } = registerDto;
+        const { email, password, firstName, lastName, phone, avatar } = registerDto;
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
             throw new common_1.ConflictException('User with this email already exists');
@@ -29,6 +29,7 @@ let AuthService = class AuthService {
             password,
             firstName,
             lastName,
+            phone,
             avatar,
         });
         const tokens = await this.generateTokens(user);
@@ -123,7 +124,15 @@ let AuthService = class AuthService {
         const { password, userType, userTypeId, ...userWithoutPassword } = user;
         const isAdmin = this.userRepository.isAdmin(user);
         const result = {
-            ...userWithoutPassword,
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone,
+            avatar: user.avatar,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
         };
         if (isAdmin) {
             result.isAdmin = true;

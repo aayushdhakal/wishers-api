@@ -226,6 +226,8 @@ export class EventController {
       return this.eventService.updateEventStatus(user.id, eventId, updateEventDto);
     }
 
+    
+
   /**
    * Delete an event
    */
