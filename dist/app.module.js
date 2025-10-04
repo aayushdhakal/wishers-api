@@ -15,6 +15,7 @@ const app_service_1 = require("./app.service");
 const database_module_1 = require("./database/database.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const event_module_1 = require("./modules/event/event.module");
+const export_module_1 = require("./modules/export/export.module");
 const jwt_auth_guard_1 = require("./modules/auth/guards/jwt-auth.guard");
 const config_2 = require("./config");
 let AppModule = class AppModule {
@@ -31,7 +32,8 @@ exports.AppModule = AppModule = __decorate([
             }),
             database_module_1.DatabaseModule,
             auth_module_1.AuthModule,
-            event_module_1.EventModule
+            event_module_1.EventModule,
+            export_module_1.ExportModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

@@ -84,6 +84,7 @@ export class UserRepository {
       where: { id },
       include: {
         accounts: true,
+        userType: true,
       },
     });
   }

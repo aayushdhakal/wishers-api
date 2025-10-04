@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EventModule } from './modules/event/event.module';
+import { ExportModule } from './modules/export/export.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { appConfig, databaseConfig, authConfig } from './config';
 
@@ -19,7 +20,8 @@ import { appConfig, databaseConfig, authConfig } from './config';
     }),
     DatabaseModule, 
     AuthModule, 
-    EventModule
+    EventModule,
+    ExportModule,
   ],
   controllers: [AppController],
   providers: [

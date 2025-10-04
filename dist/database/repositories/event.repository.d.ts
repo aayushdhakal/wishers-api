@@ -60,4 +60,5 @@ export declare class EventRepository {
     countUserEvents(userId: string): Promise<number>;
     countUserEventsByType(userId: string, eventType: string): Promise<number>;
     findEventsNeedingReminders(targetDate: Date): Promise<EventWithReminders[]>;
+    findUsersToContact(targetDate: Date): Promise<any[]>;
 }

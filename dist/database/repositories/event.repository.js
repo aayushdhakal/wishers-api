@@ -295,9 +295,61 @@ let EventRepository = class EventRepository {
                     where: {
                         isActive: true,
                     },
+                    include: {
+                        notificationTypes: true,
+                    },
                 },
             },
         });
+    }
+    async findUsersToContact(targetDate) {
+        const events = await this.prisma.event.findMany({
+            where: {
+                isActive: true,
+                reminders: {
+                    some: {
+                        isActive: true,
+                    },
+                },
+            },
+            include: {
+                user: true,
+                reminders: {
+                    where: {
+                        isActive: true,
+                    },
+                    include: {
+                        notificationTypes: true,
+                    },
+                },
+            },
+        });
+        const contactsToday = [];
+        for (const event of events) {
+            for (const reminder of event.reminders) {
+                const reminderDate = new Date(event.eventDate);
+                reminderDate.setDate(reminderDate.getDate() - reminder.reminderDays);
+                const isSameDate = reminderDate.toDateString() === targetDate.toDateString();
+                if (isSameDate) {
+                    contactsToday.push({
+                        userId: event.user.id,
+                        email: event.user.email,
+                        firstName: event.user.firstName,
+                        lastName: event.user.lastName,
+                        phone: event.user.phone,
+                        eventId: event.id,
+                        eventTitle: event.title,
+                        eventDate: event.eventDate,
+                        eventType: event.eventType,
+                        personName: event.personName,
+                        reminderDays: reminder.reminderDays,
+                        notificationTypes: reminder.notificationTypes.map(nt => nt.notificationType),
+                        targetDate: reminderDate,
+                    });
+                }
+            }
+        }
+        return contactsToday;
     }
 };
 exports.EventRepository = EventRepository;
