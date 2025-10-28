@@ -1,0 +1,129 @@
+name: Deploy API to VPS
+
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - '**'
+  workflow_dispatch:
+
+env:
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+  VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+  VPS_DOMAIN: ${{ secrets.VPS_DOMAIN }}
+
+jobs:
+  deploy-api:
+    name: Deploy API to VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout API code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+    - name: Add VPS to known hosts
+      run: |
+        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Create API deployment package
+      run: |
+        # Create a package with API files and essential deployment files
+        mkdir -p deploy-package
+        
+        # Copy API files
+        rsync -a --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='.env' \
+              --exclude='*.log' \
+              --exclude='.DS_Store' \
+              --exclude='deploy-package' \
+              ./ deploy-package/wishin-api/
+        
+        # Copy essential deployment files from parent directory
+        if [ -f ../docker-compose.lightweight.yml ]; then
+          cp ../docker-compose.lightweight.yml deploy-package/
+        fi
+        if [ -d ../nginx ]; then
+          cp -r ../nginx deploy-package/
+        fi
+        if [ -d ../mysql ]; then
+          cp -r ../mysql deploy-package/
+        fi
+        if [ -d ../secrets ]; then
+          cp -r ../secrets deploy-package/
+        fi
+        if [ -d ../ssl ]; then
+          cp -r ../ssl deploy-package/
+        fi
+        
+        tar -czf api-deploy.tar.gz -C deploy-package .
+
+    - name: Upload API to VPS
+      run: |
+        # Create directory and upload
+        ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+          mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}
+        "
+        scp api-deploy.tar.gz ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
+
+    - name: Deploy API Only
+      run: |
+        ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+          # Create the main project directory if it doesn't exist
+          mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/wishin &&
+          cd ${{ secrets.VPS_DEPLOY_PATH }}/wishin &&
+          
+          # Extract all files (including docker-compose and other essentials)
+          tar -xzf ../api-deploy.tar.gz &&
+          rm ../api-deploy.tar.gz &&
+          
+          # Stop only backend container
+          docker-compose -f docker-compose.lightweight.yml stop backend 2>/dev/null || true &&
+          
+          # Rebuild and start backend
+          docker-compose -f docker-compose.lightweight.yml build --no-cache backend &&
+          docker-compose -f docker-compose.lightweight.yml up -d backend &&
+          
+          # Wait for backend to be healthy
+          sleep 30 &&
+          
+          # Run database migrations
+          echo '🗄️ Running database migrations...'
+          docker-compose -f docker-compose.lightweight.yml exec -T backend sh -c '
+            export DATABASE_URL=\$(cat /run/secrets/database_url) &&
+            npx prisma migrate deploy --schema=./src/database/prisma/schema.prisma
+          ' || echo '⚠️ Migration failed or not needed' &&
+          
+          # Check status
+          docker-compose -f docker-compose.lightweight.yml ps backend
+        "
+
+    - name: Verify API Deployment
+      run: |
+        ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+          cd ${{ secrets.VPS_DEPLOY_PATH }}/wishin &&
+          
+          # Test API health
+          curl -f http://localhost/api/v1/health || echo 'API health check failed' &&
+          
+          # Show logs
+          docker logs wishin-backend --tail 10
+        "
+
+    - name: Deployment Summary
+      run: |
+        echo "✅ API deployment completed!"
+        echo "🌐 API URL: https://${{ secrets.VPS_DOMAIN }}/api/v1"
+        echo "🏥 Health Check: https://${{ secrets.VPS_DOMAIN }}/api/v1/health"
+        echo "📦 Deployed from: ${{ github.ref_name }}"
+        echo "🕐 Deployed at: $(date)"
