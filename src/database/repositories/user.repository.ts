@@ -118,8 +118,8 @@ export class UserRepository {
   /**
    * Check if user is admin
    */
-  isAdmin(user: User & { userType?: { name: string } | null }): boolean {
-    return user.userType?.name?.toLowerCase() === 'admin';
+  isAdmin(user: User & { userType?: { name: string, isActive: boolean } | null }): boolean {
+    return user.userType?.name?.toLowerCase() === 'admin' && user.userType?.isActive;
   }
 
   /**

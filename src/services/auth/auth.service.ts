@@ -224,7 +224,7 @@ export class AuthService {
   /**
    * Remove password from user object and conditionally add isAdmin field
    */
-  private excludePassword(user: User & { userType?: { name: string } | null }): UserResponseDto {
+  private excludePassword(user: User & { userType?: { name: string, isActive: boolean } | null }): UserResponseDto {
     const { password, userType, userTypeId, ...userWithoutPassword } = user;
     const isAdmin = this.userRepository.isAdmin(user);
     
