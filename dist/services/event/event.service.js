@@ -131,16 +131,37 @@ let EventService = class EventService {
         await this.eventRepository.deleteEvent(eventId, userId);
     }
     async getEventsByDateRange(userId, startDate, endDate, options) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let start;
+        let end;
+        if (startDate) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            if (endDate) {
+                end = new Date(endDate);
+            }
+            else {
+                end = new Date(start);
+                end.setDate(end.getDate() + 7);
+            }
+        }
+        else {
+            start = today;
+            end = new Date(today);
+            end.setDate(end.getDate() + 7);
+        }
+        end.setHours(23, 59, 59, 999);
+        if (isNaN(start.getTime())) {
+            throw new common_1.BadRequestException('Invalid start date format');
+        }
+        if (isNaN(end.getTime())) {
+            throw new common_1.BadRequestException('Invalid end date format');
+        }
         if (start >= end) {
             throw new common_1.BadRequestException('Start date must be before end date');
         }
-        const events = await this.eventRepository.findByDateRange(userId, start, end, {
-            where: {
-                isActive: options.where?.isActive,
-            }
-        });
+        const events = await this.eventRepository.findByDateRange(userId, start, end, options);
         return events.map((event) => this.mapEventToResponseDto(event));
     }
     async getEventsByType(userId, eventType, options) {

@@ -97,7 +97,7 @@ let UserRepository = class UserRepository {
         return account?.user || null;
     }
     isAdmin(user) {
-        return user.userType?.name?.toLowerCase() === 'admin';
+        return user.userType?.name?.toLowerCase() === 'admin' && user.userType?.isActive;
     }
     async setUserAsAdmin(userId) {
         const adminUserType = await this.prisma.userType.upsert({

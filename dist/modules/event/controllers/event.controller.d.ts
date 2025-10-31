@@ -33,7 +33,7 @@ export declare class EventController {
         eventsByType: Record<string, number>;
         recentEvents: EventResponseDto[];
     }>;
-    getEventsByDateRange(user: User, startDate: string, endDate: string): Promise<EventResponseDto[]>;
+    getEventsByDateRange(user: User, startDate?: string, endDate?: string): Promise<EventResponseDto[]>;
     getEventsByType(user: User, eventType: string, page: number, limit: number): Promise<{
         events: EventResponseDto[];
         total: number;

@@ -25,7 +25,7 @@ export declare class EventService {
     updateEvent(userId: string, eventId: string, updateEventDto: UpdateEventDto): Promise<EventResponseDto>;
     updateEventStatus(userId: string, eventId: string, updateEventDto: UpdateEventStatusDto): Promise<EventResponseDto>;
     deleteEvent(userId: string, eventId: string): Promise<void>;
-    getEventsByDateRange(userId: string, startDate: string, endDate: string, options?: {
+    getEventsByDateRange(userId: string, startDate?: string, endDate?: string, options?: {
         where?: Prisma.EventWhereInput;
     }): Promise<EventResponseDto[]>;
     getEventsByType(userId: string, eventType: string, options?: {

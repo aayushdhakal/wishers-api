@@ -154,8 +154,8 @@ export class EventController {
   @Get('date-range')
   async getEventsByDateRange(
     @CurrentUser() user: User,
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<EventResponseDto[]> {
     return this.eventService.getEventsByDateRange(user.id, startDate, endDate);
   }

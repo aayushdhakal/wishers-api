@@ -224,15 +224,17 @@ export class EventRepository {
       where?: Prisma.EventWhereInput;
     }
   ): Promise<EventWithReminders[]> {
-    return this.prisma.event.findMany({
-      where: {
-        userId,
-        ...options?.where,
-        eventDate: {
-          gte: startDate,
-          lte: endDate,
-        },
+    const whereClause: Prisma.EventWhereInput = {
+      userId,
+      eventDate: {
+        gte: startDate,
+        lte: endDate,
       },
+      ...(options?.where && { ...options.where }),
+    };
+
+    return this.prisma.event.findMany({
+      where: whereClause,
       include: {
         reminders: {
           include: {

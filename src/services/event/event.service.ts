@@ -205,24 +205,51 @@ export class EventService {
    */
   async getEventsByDateRange(
     userId: string,
-    startDate: string,
-    endDate: string,
+    startDate?: string,
+    endDate?: string,
     options?: {
       where?: Prisma.EventWhereInput;
     }
   ): Promise<EventResponseDto[]> {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Set default dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
+    
+    let start: Date;
+    let end: Date;
+    
+    if (startDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0); // Set to start of day
+      
+      // If endDate is provided, use it; otherwise, default to 7 days after startDate
+      if (endDate) {
+        end = new Date(endDate);
+      } else {
+        end = new Date(start);
+        end.setDate(end.getDate() + 7); // 7 days after startDate
+      }
+    } else {
+      // If no startDate, default to today and 7 days from today
+      start = today;
+      end = new Date(today);
+      end.setDate(end.getDate() + 7); // 7 days from today
+    }
+    
+    end.setHours(23, 59, 59, 999); // Set to end of day for endDate
 
+    // Validate dates
+    if (isNaN(start.getTime())) {
+      throw new BadRequestException('Invalid start date format');
+    }
+    if (isNaN(end.getTime())) {
+      throw new BadRequestException('Invalid end date format');
+    }
     if (start >= end) {
       throw new BadRequestException('Start date must be before end date');
     }
 
-    const events = await this.eventRepository.findByDateRange(userId, start, end, {
-      where: {
-        isActive: options.where?.isActive,
-      }
-    });
+    const events = await this.eventRepository.findByDateRange(userId, start, end, options);
     return events.map((event) => this.mapEventToResponseDto(event));
   }
 

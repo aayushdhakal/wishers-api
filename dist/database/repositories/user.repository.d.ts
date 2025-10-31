@@ -13,6 +13,7 @@ export declare class UserRepository {
     isAdmin(user: User & {
         userType?: {
             name: string;
+            isActive: boolean;
         } | null;
     }): boolean;
     setUserAsAdmin(userId: string): Promise<User>;
