@@ -30,4 +30,5 @@ export declare class AuthController {
     googleAuth(): Promise<void>;
     googleAuthCallback(req: any, res: Response): Promise<void>;
     googleAuthCallbackJson(req: any): Promise<AuthResponseDto>;
+    authCallback(token: string, expires: string, user: string): Promise<AuthResponseDto>;
 }

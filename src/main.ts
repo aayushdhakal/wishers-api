@@ -123,7 +123,7 @@ async function bootstrap() {
     
     // Global prefix for API routes
     app.setGlobalPrefix('api/v1', {
-      exclude: ['/health', '/'],
+      exclude: ['/health', '/', '/auth/callback'],
     });
     
     // Start the server

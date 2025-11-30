@@ -102,7 +102,7 @@ async function bootstrap() {
             },
         }));
         app.setGlobalPrefix('api/v1', {
-            exclude: ['/health', '/'],
+            exclude: ['/health', '/', '/auth/callback'],
         });
         const actualPort = enableHttps && fs.existsSync(process.env.SSL_KEY_PATH || './certs/key.pem') ? httpsPort : port;
         const protocol = enableHttps && fs.existsSync(process.env.SSL_KEY_PATH || './certs/key.pem') ? 'https' : 'http';
