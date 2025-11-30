@@ -187,8 +187,12 @@ export class AuthController {
 
       const authResult = await this.authService.googleLogin(googleUser);
       
-      // Get frontend URL from config
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
+      // Get frontend URL from config (try multiple ways to ensure we get it)
+      const frontendUrl = 
+        process.env.FRONTEND_URL || 
+        this.configService.get<string>('app.frontendUrl') ||
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://65.109.134.90';
       
       // Redirect to frontend with token and user data as URL parameters
       const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
@@ -199,7 +203,11 @@ export class AuthController {
       res.redirect(redirectUrl.toString());
     } catch (error) {
       // Redirect to frontend with error
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
+      const frontendUrl = 
+        process.env.FRONTEND_URL || 
+        this.configService.get<string>('app.frontendUrl') ||
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://65.109.134.90';
       const errorUrl = new URL(`${frontendUrl}/auth/error`);
       errorUrl.searchParams.set('error', 'authentication_failed');
       errorUrl.searchParams.set('message', error.message || 'Google authentication failed');
