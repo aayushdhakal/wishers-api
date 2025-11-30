@@ -194,6 +194,14 @@ export class AuthController {
         this.configService.get<string>('FRONTEND_URL') ||
         'https://65.109.134.90';
       
+      // Log for debugging
+      console.log('🔍 Google OAuth Redirect Debug:', {
+        'process.env.FRONTEND_URL': process.env.FRONTEND_URL,
+        'app.frontendUrl': this.configService.get<string>('app.frontendUrl'),
+        'FRONTEND_URL': this.configService.get<string>('FRONTEND_URL'),
+        'final frontendUrl': frontendUrl
+      });
+      
       // Redirect to frontend with token and user data as URL parameters
       const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
       redirectUrl.searchParams.set('token', authResult.accessToken);
