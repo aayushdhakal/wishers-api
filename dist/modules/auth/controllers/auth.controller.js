@@ -65,7 +65,7 @@ let AuthController = class AuthController {
                 avatar: req.user.avatar,
             };
             const authResult = await this.authService.googleLogin(googleUser);
-            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:3000');
+            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
             const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
             redirectUrl.searchParams.set('token', authResult.accessToken);
             redirectUrl.searchParams.set('expires', authResult.expiresIn.toString());
@@ -73,7 +73,7 @@ let AuthController = class AuthController {
             res.redirect(redirectUrl.toString());
         }
         catch (error) {
-            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:3000');
+            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
             const errorUrl = new URL(`${frontendUrl}/auth/error`);
             errorUrl.searchParams.set('error', 'authentication_failed');
             errorUrl.searchParams.set('message', error.message || 'Google authentication failed');
@@ -88,6 +88,23 @@ let AuthController = class AuthController {
             avatar: req.user.avatar,
         };
         return this.authService.googleLogin(googleUser);
+    }
+    async authCallback(token, expires, user) {
+        if (!token) {
+            throw new Error('Token is required');
+        }
+        let userData;
+        try {
+            userData = user ? JSON.parse(decodeURIComponent(user)) : null;
+        }
+        catch (error) {
+            userData = null;
+        }
+        return {
+            accessToken: token,
+            expiresIn: expires ? parseInt(expires, 10) : 3600,
+            user: userData,
+        };
     }
 };
 exports.AuthController = AuthController;
@@ -213,6 +230,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "googleAuthCallbackJson", null);
+__decorate([
+    (0, decorators_1.Public)(),
+    (0, common_1.Get)('callback'),
+    __param(0, (0, common_1.Query)('token')),
+    __param(1, (0, common_1.Query)('expires')),
+    __param(2, (0, common_1.Query)('user')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "authCallback", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService,

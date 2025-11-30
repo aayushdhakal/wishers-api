@@ -11,6 +11,7 @@ import {
   ValidationPipe,
   UsePipes,
   Res,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from '../../../services/auth/auth.service';
 import { RegisterDto, LoginDto, AuthResponseDto, UserResponseDto } from '../dto';
@@ -187,7 +188,7 @@ export class AuthController {
       const authResult = await this.authService.googleLogin(googleUser);
       
       // Get frontend URL from config
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
       
       // Redirect to frontend with token and user data as URL parameters
       const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
@@ -198,7 +199,7 @@ export class AuthController {
       res.redirect(redirectUrl.toString());
     } catch (error) {
       // Redirect to frontend with error
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
       const errorUrl = new URL(`${frontendUrl}/auth/error`);
       errorUrl.searchParams.set('error', 'authentication_failed');
       errorUrl.searchParams.set('message', error.message || 'Google authentication failed');
@@ -223,5 +224,36 @@ export class AuthController {
     };
 
     return this.authService.googleLogin(googleUser);
+  }
+
+  /**
+   * OAuth callback handler - handles callback with token and user data in query params
+   * This endpoint can be used when the frontend and backend are on the same domain
+   * or for testing purposes
+   */
+  @Public()
+  @Get('callback')
+  async authCallback(
+    @Query('token') token: string,
+    @Query('expires') expires: string,
+    @Query('user') user: string,
+  ): Promise<AuthResponseDto> {
+    if (!token) {
+      throw new Error('Token is required');
+    }
+
+    let userData;
+    try {
+      userData = user ? JSON.parse(decodeURIComponent(user)) : null;
+    } catch (error) {
+      // If user data parsing fails, continue without it
+      userData = null;
+    }
+
+    return {
+      accessToken: token,
+      expiresIn: expires ? parseInt(expires, 10) : 3600,
+      user: userData,
+    };
   }
 }
