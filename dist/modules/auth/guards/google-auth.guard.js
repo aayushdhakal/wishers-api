@@ -10,6 +10,11 @@ exports.GoogleAuthGuard = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 let GoogleAuthGuard = class GoogleAuthGuard extends (0, passport_1.AuthGuard)('google') {
+    getAuthenticateOptions(context) {
+        return {
+            prompt: 'select_account',
+        };
+    }
 };
 exports.GoogleAuthGuard = GoogleAuthGuard;
 exports.GoogleAuthGuard = GoogleAuthGuard = __decorate([
