@@ -65,7 +65,16 @@ let AuthController = class AuthController {
                 avatar: req.user.avatar,
             };
             const authResult = await this.authService.googleLogin(googleUser);
-            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+            const frontendUrl = process.env.FRONTEND_URL ||
+                this.configService.get('app.frontendUrl') ||
+                this.configService.get('FRONTEND_URL') ||
+                'https://65.109.134.90';
+            console.log('🔍 Google OAuth Redirect Debug:', {
+                'process.env.FRONTEND_URL': process.env.FRONTEND_URL,
+                'app.frontendUrl': this.configService.get('app.frontendUrl'),
+                'FRONTEND_URL': this.configService.get('FRONTEND_URL'),
+                'final frontendUrl': frontendUrl
+            });
             const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
             redirectUrl.searchParams.set('token', authResult.accessToken);
             redirectUrl.searchParams.set('expires', authResult.expiresIn.toString());
@@ -73,7 +82,10 @@ let AuthController = class AuthController {
             res.redirect(redirectUrl.toString());
         }
         catch (error) {
-            const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+            const frontendUrl = process.env.FRONTEND_URL ||
+                this.configService.get('app.frontendUrl') ||
+                this.configService.get('FRONTEND_URL') ||
+                'https://65.109.134.90';
             const errorUrl = new URL(`${frontendUrl}/auth/error`);
             errorUrl.searchParams.set('error', 'authentication_failed');
             errorUrl.searchParams.set('message', error.message || 'Google authentication failed');

@@ -18,10 +18,12 @@ model User {
   isActive   Boolean    @default(true)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
-  accounts   Account[]
-  events     Event[]
-  userTypeId String?
-  userType   UserType?  @relation(fields: [userTypeId], references: [id])
+  accounts          Account[]
+  events            Event[]
+  userTypeId        String?
+  userType          UserType?  @relation(fields: [userTypeId], references: [id])
+  userCredit        UserCredit?
+  creditTransactions CreditTransaction[]
 
   @@index([userTypeId], map: "users_userTypeId_fkey")
   @@map("users")
@@ -124,3 +126,85 @@ model EventReminderNotification {
   @@index([reminderId], map: "event_reminder_notifications_reminderId_fkey")
   @@map("event_reminder_notifications")
 }
+
+enum CreditTransactionType {
+  PURCHASE
+  USAGE
+  REFUND
+  BONUS
+  ADJUSTMENT
+}
+
+enum CreditTransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  STRIPE
+  BANK_TRANSFER
+  KHALTI
+  ESEWA
+  OTHER
+}
+
+model UserCredit {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions CreditTransaction[]
+
+  @@index([userId], map: "user_credits_userId_fkey")
+  @@map("user_credits")
+}
+
+model CreditTransaction {
+  id              String                    @id @default(cuid())
+  userId          String
+  userCreditId    String
+  type            CreditTransactionType
+  status          CreditTransactionStatus   @default(PENDING)
+  amount          Decimal                  @db.Decimal(10, 2) // Positive for purchase/bonus, negative for usage
+  balanceBefore   Decimal                  @db.Decimal(10, 2)
+  balanceAfter    Decimal                  @db.Decimal(10, 2)
+  description     String?
+  paymentMethod   PaymentMethod?
+  paymentId       String?                  // External payment ID (e.g., Stripe payment intent ID)
+  metadata        Json?                     // Additional transaction data
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userCredit      UserCredit                @relation(fields: [userCreditId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "credit_transactions_userId_fkey")
+  @@index([userCreditId], map: "credit_transactions_userCreditId_fkey")
+  @@index([type], map: "credit_transactions_type_idx")
+  @@index([status], map: "credit_transactions_status_idx")
+  @@index([createdAt], map: "credit_transactions_createdAt_idx")
+  @@map("credit_transactions")
+}
+
+model CreditPackage {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  credits     Decimal  @db.Decimal(10, 2) // Number of credits in this package
+  price       Decimal  @db.Decimal(10, 2) // Price in real currency (e.g., USD)
+  currency    String   @default("USD")
+  bonusCredits Decimal @default(0) @db.Decimal(10, 2) // Optional bonus credits
+  isActive    Boolean  @default(true)
+  displayOrder Int     @default(0) // For ordering packages in UI
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("credit_packages")
+}
+

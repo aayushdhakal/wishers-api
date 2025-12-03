@@ -10,14 +10,15 @@ exports.DatabaseModule = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
 const user_repository_1 = require("./repositories/user.repository");
+const credit_repository_1 = require("./repositories/credit.repository");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
 exports.DatabaseModule = DatabaseModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        providers: [prisma_service_1.PrismaService, user_repository_1.UserRepository],
-        exports: [prisma_service_1.PrismaService, user_repository_1.UserRepository],
+        providers: [prisma_service_1.PrismaService, user_repository_1.UserRepository, credit_repository_1.CreditRepository],
+        exports: [prisma_service_1.PrismaService, user_repository_1.UserRepository, credit_repository_1.CreditRepository],
     })
 ], DatabaseModule);
 //# sourceMappingURL=database.module.js.map
