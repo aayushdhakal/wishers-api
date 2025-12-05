@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { EventModule } from './modules/event/event.module';
 import { ExportModule } from './modules/export/export.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { CreditModule } from './modules/credit/credit.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { appConfig, databaseConfig, authConfig } from './config';
 
@@ -24,6 +25,7 @@ import { appConfig, databaseConfig, authConfig } from './config';
     EventModule,
     ExportModule,
     NotificationModule,
+    CreditModule,
   ],
   controllers: [AppController],
   providers: [

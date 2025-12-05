@@ -1,0 +1,154 @@
+import { CreditService } from '../../../services/credit/credit.service';
+import { CreateCreditPackageDto, UpdateCreditPackageDto, PurchaseCreditsDto, AddBonusDto, UseCreditsDto } from '../dto';
+import { User } from '@prisma/client';
+import { CreditTransactionType } from '@prisma/client';
+export declare class CreditController {
+    private readonly creditService;
+    constructor(creditService: CreditService);
+    getBalance(user: User): Promise<{
+        balance: number;
+    }>;
+    getAccount(user: User): Promise<{
+        balance: number;
+        transactions: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            description: string | null;
+            userCreditId: string;
+            type: import(".prisma/client").$Enums.CreditTransactionType;
+            status: import(".prisma/client").$Enums.CreditTransactionStatus;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            balanceBefore: import("@prisma/client/runtime/library").Decimal;
+            balanceAfter: import("@prisma/client/runtime/library").Decimal;
+            paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
+            paymentId: string | null;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        }[];
+    }>;
+    getTransactionHistory(user: User, type?: CreditTransactionType, page?: number, limit?: number): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        description: string | null;
+        userCreditId: string;
+        type: import(".prisma/client").$Enums.CreditTransactionType;
+        status: import(".prisma/client").$Enums.CreditTransactionStatus;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        balanceBefore: import("@prisma/client/runtime/library").Decimal;
+        balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
+        paymentId: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    }[]>;
+    getStatistics(user: User): Promise<{
+        totalPurchases: number;
+        totalUsage: number;
+        totalBonuses: number;
+        totalRefunds: number;
+        totalTransactions: number;
+    }>;
+    getActivePackages(): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        credits: import("@prisma/client/runtime/library").Decimal;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        bonusCredits: import("@prisma/client/runtime/library").Decimal;
+        displayOrder: number;
+    }[]>;
+    getPackageById(id: string): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        credits: import("@prisma/client/runtime/library").Decimal;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        bonusCredits: import("@prisma/client/runtime/library").Decimal;
+        displayOrder: number;
+    }>;
+    createPackage(createDto: CreateCreditPackageDto): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        credits: import("@prisma/client/runtime/library").Decimal;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        bonusCredits: import("@prisma/client/runtime/library").Decimal;
+        displayOrder: number;
+    }>;
+    updatePackage(id: string, updateDto: UpdateCreditPackageDto): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        credits: import("@prisma/client/runtime/library").Decimal;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        bonusCredits: import("@prisma/client/runtime/library").Decimal;
+        displayOrder: number;
+    }>;
+    deletePackage(id: string): Promise<void>;
+    purchaseCredits(user: User, purchaseDto: PurchaseCreditsDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        description: string | null;
+        userCreditId: string;
+        type: import(".prisma/client").$Enums.CreditTransactionType;
+        status: import(".prisma/client").$Enums.CreditTransactionStatus;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        balanceBefore: import("@prisma/client/runtime/library").Decimal;
+        balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
+        paymentId: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+    addBonus(user: User, addBonusDto: AddBonusDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        description: string | null;
+        userCreditId: string;
+        type: import(".prisma/client").$Enums.CreditTransactionType;
+        status: import(".prisma/client").$Enums.CreditTransactionStatus;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        balanceBefore: import("@prisma/client/runtime/library").Decimal;
+        balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
+        paymentId: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+    useCredits(user: User, useCreditsDto: UseCreditsDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        description: string | null;
+        userCreditId: string;
+        type: import(".prisma/client").$Enums.CreditTransactionType;
+        status: import(".prisma/client").$Enums.CreditTransactionStatus;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        balanceBefore: import("@prisma/client/runtime/library").Decimal;
+        balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
+        paymentId: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+}

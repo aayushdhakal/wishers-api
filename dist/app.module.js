@@ -17,6 +17,7 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const event_module_1 = require("./modules/event/event.module");
 const export_module_1 = require("./modules/export/export.module");
 const notification_module_1 = require("./modules/notification/notification.module");
+const credit_module_1 = require("./modules/credit/credit.module");
 const jwt_auth_guard_1 = require("./modules/auth/guards/jwt-auth.guard");
 const config_2 = require("./config");
 let AppModule = class AppModule {
@@ -36,6 +37,7 @@ exports.AppModule = AppModule = __decorate([
             event_module_1.EventModule,
             export_module_1.ExportModule,
             notification_module_1.NotificationModule,
+            credit_module_1.CreditModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
