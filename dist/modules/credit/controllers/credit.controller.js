@@ -101,12 +101,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "getStatistics", null);
 __decorate([
+    (0, decorators_1.Public)(),
     (0, common_1.Get)('packages'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "getActivePackages", null);
 __decorate([
+    (0, decorators_1.Public)(),
     (0, common_1.Get)('packages/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),

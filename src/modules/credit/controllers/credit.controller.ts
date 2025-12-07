@@ -24,7 +24,7 @@ import {
   UseCreditsDto,
 } from '../dto';
 import { JwtAuthGuard } from '../../auth/guards';
-import { CurrentUser } from '../../auth/decorators';
+import { CurrentUser, Public } from '../../auth/decorators';
 import { User } from '@prisma/client';
 import { CreditTransactionType } from '@prisma/client';
 
@@ -80,8 +80,9 @@ export class CreditController {
   // ==================== Credit Package Endpoints ====================
 
   /**
-   * Get all active credit packages (public for authenticated users)
+   * Get all active credit packages (public endpoint - no authentication required)
    */
+  @Public()
   @Get('packages')
   async getActivePackages() {
     return this.creditService.getActivePackages();
@@ -90,6 +91,7 @@ export class CreditController {
   /**
    * Get credit package by ID
    */
+  @Public()
   @Get('packages/:id')
   async getPackageById(@Param('id') id: string) {
     return this.creditService.getPackageById(id);
