@@ -15,13 +15,13 @@ export declare class CreditController {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            description: string | null;
             userCreditId: string;
             type: import(".prisma/client").$Enums.CreditTransactionType;
             status: import(".prisma/client").$Enums.CreditTransactionStatus;
             amount: import("@prisma/client/runtime/library").Decimal;
             balanceBefore: import("@prisma/client/runtime/library").Decimal;
             balanceAfter: import("@prisma/client/runtime/library").Decimal;
+            description: string | null;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
             paymentId: string | null;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
@@ -32,13 +32,13 @@ export declare class CreditController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        description: string | null;
         userCreditId: string;
         type: import(".prisma/client").$Enums.CreditTransactionType;
         status: import(".prisma/client").$Enums.CreditTransactionStatus;
         amount: import("@prisma/client/runtime/library").Decimal;
         balanceBefore: import("@prisma/client/runtime/library").Decimal;
         balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         paymentId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
@@ -76,7 +76,7 @@ export declare class CreditController {
         bonusCredits: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;
-    createPackage(createDto: CreateCreditPackageDto): Promise<{
+    createPackage(user: User, createDto: CreateCreditPackageDto): Promise<{
         name: string;
         id: string;
         isActive: boolean;
@@ -89,7 +89,7 @@ export declare class CreditController {
         bonusCredits: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;
-    updatePackage(id: string, updateDto: UpdateCreditPackageDto): Promise<{
+    updatePackage(user: User, id: string, updateDto: UpdateCreditPackageDto): Promise<{
         name: string;
         id: string;
         isActive: boolean;
@@ -102,19 +102,19 @@ export declare class CreditController {
         bonusCredits: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;
-    deletePackage(id: string): Promise<void>;
+    deletePackage(user: User, id: string): Promise<void>;
     purchaseCredits(user: User, purchaseDto: PurchaseCreditsDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        description: string | null;
         userCreditId: string;
         type: import(".prisma/client").$Enums.CreditTransactionType;
         status: import(".prisma/client").$Enums.CreditTransactionStatus;
         amount: import("@prisma/client/runtime/library").Decimal;
         balanceBefore: import("@prisma/client/runtime/library").Decimal;
         balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         paymentId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
@@ -124,13 +124,13 @@ export declare class CreditController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        description: string | null;
         userCreditId: string;
         type: import(".prisma/client").$Enums.CreditTransactionType;
         status: import(".prisma/client").$Enums.CreditTransactionStatus;
         amount: import("@prisma/client/runtime/library").Decimal;
         balanceBefore: import("@prisma/client/runtime/library").Decimal;
         balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         paymentId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
@@ -140,13 +140,13 @@ export declare class CreditController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        description: string | null;
         userCreditId: string;
         type: import(".prisma/client").$Enums.CreditTransactionType;
         status: import(".prisma/client").$Enums.CreditTransactionStatus;
         amount: import("@prisma/client/runtime/library").Decimal;
         balanceBefore: import("@prisma/client/runtime/library").Decimal;
         balanceAfter: import("@prisma/client/runtime/library").Decimal;
+        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         paymentId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;

@@ -17,11 +17,16 @@ import {
   CreditTransaction,
   CreditTransactionType,
   PaymentMethod,
+  User,
 } from '@prisma/client';
+import { UserRepository } from '../../database/repositories/user.repository';
 
 @Injectable()
 export class CreditService {
-  constructor(private readonly creditRepository: CreditRepository) {}
+  constructor(
+    private readonly creditRepository: CreditRepository, 
+    private readonly userRepository: UserRepository
+  ) {}
 
   // ==================== User Credit Operations ====================
 
@@ -67,8 +72,8 @@ export class CreditService {
   /**
    * Get user transaction statistics
    */
-  async getTransactionStatistics(userId: string) {
-    return this.creditRepository.getTransactionStatistics(userId);
+  async getTransactionStatistics(user: User) {
+    return this.creditRepository.getTransactionStatistics(user.id);
   }
 
   // ==================== Credit Package Operations ====================
@@ -101,14 +106,22 @@ export class CreditService {
   /**
    * Create a new credit package (admin only)
    */
-  async createPackage(createDto: CreateCreditPackageDto): Promise<CreditPackage> {
+  async createPackage(user: User, createDto: CreateCreditPackageDto): Promise<CreditPackage> {
+    const isAdmin = this.userRepository.isAdmin(user);
+    if (!isAdmin) {
+      throw new ForbiddenException('You are not authorized to create a credit package');
+    }
     return this.creditRepository.createCreditPackage(createDto);
   }
 
   /**
    * Update credit package (admin only)
    */
-  async updatePackage(id: string, updateDto: UpdateCreditPackageDto): Promise<CreditPackage> {
+  async updatePackage(user: User, id: string, updateDto: UpdateCreditPackageDto): Promise<CreditPackage> {
+    const isAdmin = this.userRepository.isAdmin(user);
+    if (!isAdmin) {
+      throw new ForbiddenException('You are not authorized to create a credit package');
+    }
     const package_ = await this.creditRepository.findCreditPackageById(id);
     if (!package_) {
       throw new NotFoundException('Credit package not found');
@@ -119,7 +132,11 @@ export class CreditService {
   /**
    * Delete credit package (admin only)
    */
-  async deletePackage(id: string): Promise<void> {
+  async deletePackage(user: User, id: string): Promise<void> {
+    const isAdmin = this.userRepository.isAdmin(user);
+    if (!isAdmin) {
+      throw new ForbiddenException('You are not authorized to create a credit package');
+    }
     const package_ = await this.creditRepository.findCreditPackageById(id);
     if (!package_) {
       throw new NotFoundException('Credit package not found');

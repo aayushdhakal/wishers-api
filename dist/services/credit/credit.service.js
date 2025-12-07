@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreditService = void 0;
 const common_1 = require("@nestjs/common");
 const credit_repository_1 = require("../../database/repositories/credit.repository");
+const user_repository_1 = require("../../database/repositories/user.repository");
 let CreditService = class CreditService {
-    constructor(creditRepository) {
+    constructor(creditRepository, userRepository) {
         this.creditRepository = creditRepository;
+        this.userRepository = userRepository;
     }
     async getBalance(userId) {
         const balance = await this.creditRepository.getUserCreditBalance(userId);
@@ -36,8 +38,8 @@ let CreditService = class CreditService {
     async getTransactionHistory(userId, options) {
         return this.creditRepository.findCreditTransactionsByUserId(userId, options);
     }
-    async getTransactionStatistics(userId) {
-        return this.creditRepository.getTransactionStatistics(userId);
+    async getTransactionStatistics(user) {
+        return this.creditRepository.getTransactionStatistics(user.id);
     }
     async getActivePackages() {
         return this.creditRepository.findActiveCreditPackages();
@@ -52,17 +54,29 @@ let CreditService = class CreditService {
         }
         return package_;
     }
-    async createPackage(createDto) {
+    async createPackage(user, createDto) {
+        const isAdmin = this.userRepository.isAdmin(user);
+        if (!isAdmin) {
+            throw new common_1.ForbiddenException('You are not authorized to create a credit package');
+        }
         return this.creditRepository.createCreditPackage(createDto);
     }
-    async updatePackage(id, updateDto) {
+    async updatePackage(user, id, updateDto) {
+        const isAdmin = this.userRepository.isAdmin(user);
+        if (!isAdmin) {
+            throw new common_1.ForbiddenException('You are not authorized to create a credit package');
+        }
         const package_ = await this.creditRepository.findCreditPackageById(id);
         if (!package_) {
             throw new common_1.NotFoundException('Credit package not found');
         }
         return this.creditRepository.updateCreditPackage(id, updateDto);
     }
-    async deletePackage(id) {
+    async deletePackage(user, id) {
+        const isAdmin = this.userRepository.isAdmin(user);
+        if (!isAdmin) {
+            throw new common_1.ForbiddenException('You are not authorized to create a credit package');
+        }
         const package_ = await this.creditRepository.findCreditPackageById(id);
         if (!package_) {
             throw new common_1.NotFoundException('Credit package not found');
@@ -99,6 +113,7 @@ let CreditService = class CreditService {
 exports.CreditService = CreditService;
 exports.CreditService = CreditService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [credit_repository_1.CreditRepository])
+    __metadata("design:paramtypes", [credit_repository_1.CreditRepository,
+        user_repository_1.UserRepository])
 ], CreditService);
 //# sourceMappingURL=credit.service.js.map

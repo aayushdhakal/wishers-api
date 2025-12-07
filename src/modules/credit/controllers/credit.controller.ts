@@ -74,7 +74,7 @@ export class CreditController {
    */
   @Get('statistics')
   async getStatistics(@CurrentUser() user: User) {
-    return this.creditService.getTransactionStatistics(user.id);
+    return this.creditService.getTransactionStatistics(user);
   }
 
   // ==================== Credit Package Endpoints ====================
@@ -101,8 +101,8 @@ export class CreditController {
   @Post('packages')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  async createPackage(@Body() createDto: CreateCreditPackageDto) {
-    return this.creditService.createPackage(createDto);
+  async createPackage(@CurrentUser() user: User, @Body() createDto: CreateCreditPackageDto) {
+    return this.creditService.createPackage(user, createDto);
   }
 
   /**
@@ -110,8 +110,8 @@ export class CreditController {
    */
   @Put('packages/:id')
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  async updatePackage(@Param('id') id: string, @Body() updateDto: UpdateCreditPackageDto) {
-    return this.creditService.updatePackage(id, updateDto);
+  async updatePackage(@CurrentUser() user: User, @Param('id') id: string, @Body() updateDto: UpdateCreditPackageDto) {
+    return this.creditService.updatePackage(user, id, updateDto);
   }
 
   /**
@@ -119,8 +119,8 @@ export class CreditController {
    */
   @Delete('packages/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePackage(@Param('id') id: string) {
-    await this.creditService.deletePackage(id);
+  async deletePackage(@CurrentUser() user: User, @Param('id') id: string) {
+    await this.creditService.deletePackage(user, id);
   }
 
   // ==================== Credit Purchase Endpoints ====================

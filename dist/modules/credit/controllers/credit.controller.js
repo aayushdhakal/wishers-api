@@ -38,7 +38,7 @@ let CreditController = class CreditController {
         });
     }
     async getStatistics(user) {
-        return this.creditService.getTransactionStatistics(user.id);
+        return this.creditService.getTransactionStatistics(user);
     }
     async getActivePackages() {
         return this.creditService.getActivePackages();
@@ -46,14 +46,14 @@ let CreditController = class CreditController {
     async getPackageById(id) {
         return this.creditService.getPackageById(id);
     }
-    async createPackage(createDto) {
-        return this.creditService.createPackage(createDto);
+    async createPackage(user, createDto) {
+        return this.creditService.createPackage(user, createDto);
     }
-    async updatePackage(id, updateDto) {
-        return this.creditService.updatePackage(id, updateDto);
+    async updatePackage(user, id, updateDto) {
+        return this.creditService.updatePackage(user, id, updateDto);
     }
-    async deletePackage(id) {
-        await this.creditService.deletePackage(id);
+    async deletePackage(user, id) {
+        await this.creditService.deletePackage(user, id);
     }
     async purchaseCredits(user, purchaseDto) {
         return this.creditService.purchaseCredits(user.id, purchaseDto);
@@ -117,26 +117,29 @@ __decorate([
     (0, common_1.Post)('packages'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, common_1.UsePipes)(new common_1.ValidationPipe({ whitelist: true, transform: true })),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreateCreditPackageDto]),
+    __metadata("design:paramtypes", [Object, dto_1.CreateCreditPackageDto]),
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "createPackage", null);
 __decorate([
     (0, common_1.Put)('packages/:id'),
     (0, common_1.UsePipes)(new common_1.ValidationPipe({ whitelist: true, transform: true })),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.UpdateCreditPackageDto]),
+    __metadata("design:paramtypes", [Object, String, dto_1.UpdateCreditPackageDto]),
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "updatePackage", null);
 __decorate([
     (0, common_1.Delete)('packages/:id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "deletePackage", null);
 __decorate([
