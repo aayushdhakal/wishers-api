@@ -1,6 +1,6 @@
 import { CreditRepository } from '../../database/repositories/credit.repository';
 import { CreateCreditPackageDto, UpdateCreditPackageDto, PurchaseCreditsDto, AddBonusDto, UseCreditsDto } from '../../modules/credit/dto';
-import { CreditPackage, CreditTransaction, CreditTransactionType, User } from '@prisma/client';
+import { CreditPackage, CreditTransaction, CreditTransactionType, PaymentMethod, User } from '@prisma/client';
 import { UserRepository } from '../../database/repositories/user.repository';
 export declare class CreditService {
     private readonly creditRepository;
@@ -48,6 +48,7 @@ export declare class CreditService {
         paymentId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
     }[]>;
+    getPurchaseMethods(): Promise<PaymentMethod[]>;
     getTransactionStatistics(user: User): Promise<{
         totalPurchases: number;
         totalUsage: number;

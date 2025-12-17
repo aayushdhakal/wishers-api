@@ -68,6 +68,12 @@ export class CreditService {
   ) {
     return this.creditRepository.findCreditTransactionsByUserId(userId, options);
   }
+  /**
+   * Get all purchase methods
+   */
+  async getPurchaseMethods(): Promise<PaymentMethod[]> {
+    return Object.values(PaymentMethod) as PaymentMethod[];
+  }
 
   /**
    * Get user transaction statistics

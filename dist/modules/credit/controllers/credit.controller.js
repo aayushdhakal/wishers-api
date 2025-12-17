@@ -55,6 +55,9 @@ let CreditController = class CreditController {
     async deletePackage(user, id) {
         await this.creditService.deletePackage(user, id);
     }
+    async getAllPurchaseMethods() {
+        return this.creditService.getPurchaseMethods();
+    }
     async purchaseCredits(user, purchaseDto) {
         return this.creditService.purchaseCredits(user.id, purchaseDto);
     }
@@ -144,6 +147,13 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], CreditController.prototype, "deletePackage", null);
+__decorate([
+    (0, decorators_1.Public)(),
+    (0, common_1.Get)('purchase-methods'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], CreditController.prototype, "getAllPurchaseMethods", null);
 __decorate([
     (0, common_1.Post)('purchase'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),

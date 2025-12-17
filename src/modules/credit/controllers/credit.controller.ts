@@ -125,6 +125,15 @@ export class CreditController {
     await this.creditService.deletePackage(user, id);
   }
 
+  /**
+   * Get all the purchase methods
+   */
+  @Public()
+  @Get('purchase-methods')
+  async getAllPurchaseMethods() {
+    return this.creditService.getPurchaseMethods();
+  }
+
   // ==================== Credit Purchase Endpoints ====================
 
   /**

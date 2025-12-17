@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreditService = void 0;
 const common_1 = require("@nestjs/common");
 const credit_repository_1 = require("../../database/repositories/credit.repository");
+const client_1 = require("@prisma/client");
 const user_repository_1 = require("../../database/repositories/user.repository");
 let CreditService = class CreditService {
     constructor(creditRepository, userRepository) {
@@ -37,6 +38,9 @@ let CreditService = class CreditService {
     }
     async getTransactionHistory(userId, options) {
         return this.creditRepository.findCreditTransactionsByUserId(userId, options);
+    }
+    async getPurchaseMethods() {
+        return Object.values(client_1.PaymentMethod);
     }
     async getTransactionStatistics(user) {
         return this.creditRepository.getTransactionStatistics(user.id);

@@ -103,6 +103,7 @@ export declare class CreditController {
         displayOrder: number;
     }>;
     deletePackage(user: User, id: string): Promise<void>;
+    getAllPurchaseMethods(): Promise<import(".prisma/client").$Enums.PaymentMethod[]>;
     purchaseCredits(user: User, purchaseDto: PurchaseCreditsDto): Promise<{
         id: string;
         createdAt: Date;
